@@ -1,13 +1,16 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
+#[derive(Clone, Copy)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
     pub z: f32,
 }
 
+pub type Point3 = Vec3;
+
 impl Vec3 {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             x: 0.0,
             y: 0.0,
@@ -15,19 +18,19 @@ impl Vec3 {
         }
     }
 
-    fn length_squared(&self) -> f32 {
+    pub fn length_squared(&self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    fn length(&self) -> f32 {
+    pub fn length(&self) -> f32 {
         self.length_squared().sqrt()
     }
 
-    fn dot(&self, rhs: &Self) -> f32 {
+    pub fn dot(&self, rhs: &Self) -> f32 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
-    fn cross(&self, rhs: &Self) -> Self {
+    pub fn cross(&self, rhs: &Self) -> Self {
         Self {
             x: self.y * rhs.z - self.z * rhs.y,
             y: self.z * rhs.x - self.x * rhs.z,
@@ -35,7 +38,7 @@ impl Vec3 {
         }
     }
 
-    fn unit_vector(self) -> Self {
+    pub fn unit_vector(self) -> Self {
         let len = self.length();
         self / len
     }
