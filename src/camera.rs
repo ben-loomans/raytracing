@@ -6,6 +6,7 @@ pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: u32,
     pub samples_per_pixel: u32,
+    pub max_depth: u32,
 
     image_height: u32,
     center: Point3,
@@ -15,7 +16,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32) -> Self {
+    pub fn new(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32) -> Self {
         let image_height = (image_width as f64 / aspect_ratio) as u32;
         let image_height = if image_height > 0 {image_height} else {1};
 
@@ -44,6 +45,7 @@ impl Camera {
             aspect_ratio,
             image_width,
             samples_per_pixel,
+            max_depth,
             image_height,
             center,
             pixel00_loc,
@@ -62,7 +64,7 @@ impl Camera {
 
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j);
-                    pixel_color += self.ray_color(&r, &world);
+                    pixel_color += self.ray_color(&r, self.max_depth, &world);
                 }
 
                 write_color(pixel_color, self.samples_per_pixel);
@@ -85,16 +87,18 @@ impl Camera {
         return (px * self.pixel_delta_u) + (py * self.pixel_delta_v);
     }
 
-    fn ray_color(&self, r: &Ray, world: &impl Hittable) -> Color {
+    fn ray_color(&self, r: &Ray, depth: u32, world: &impl Hittable) -> Color {
         let mut rec = HitRecord::default();
+
+        if depth <= 0 {return Color::new(0,0,0)}
     
-        if world.hit(r, Interval::new(0.0, f64::INFINITY), &mut rec) {
-            let direction = Vec3::random_on_hemisphere(&rec.normal);
-            return 0.5 * self.ray_color(&Ray::new(rec.p, direction), world);
+        if world.hit(r, Interval::new(0.001, f64::INFINITY), &mut rec) {
+            let direction = rec.normal + Vec3::random_on_hemisphere(&rec.normal);
+            return 0.5 * self.ray_color(&Ray::new(rec.p, direction), depth - 1, world);
         }
     
         let unit_direction = r.dir.unit_vector();
         let a = 0.5 * (unit_direction.y + 1.0);
-        (1.0 - a) * Color {x: 1.0, y: 1.0, z: 1.0} + a * Color {x: 0.5, y: 0.7, z: 1.0}
+        return (1.0 - a) * Color::new(1,1,1) + a * Color::new(0.5, 0.7, 1.0);
     }
 }
