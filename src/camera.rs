@@ -1,8 +1,11 @@
-use crate::{hittable::{HitRecord, Hittable}, interval::Interval, ray::Ray, write_color, Color, Point3, Vec3};
+use rand::random;
+
+use crate::{hittable::{HitRecord, Hittable}, interval::Interval, ray::{self, Ray}, util::random_f64, write_color, Color, Point3, Vec3};
 
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: u32,
+    pub samples_per_pixel: u32,
 
     image_height: u32,
     center: Point3,
@@ -12,7 +15,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(aspect_ratio: f64, image_width: u32) -> Self {
+    pub fn new(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32) -> Self {
         let image_height = (image_width as f64 / aspect_ratio) as u32;
         let image_height = if image_height > 0 {image_height} else {1};
 
@@ -40,6 +43,7 @@ impl Camera {
         Self {
             aspect_ratio,
             image_width,
+            samples_per_pixel,
             image_height,
             center,
             pixel00_loc,
@@ -54,23 +58,34 @@ impl Camera {
         for j in 0..self.image_height {
             eprintln!("scanlines remaining: {}", self.image_height - j);
             for i in 0..self.image_width {
-                let pixel_center = self.pixel00_loc + (i as f64 * self.pixel_delta_u) + (j as f64 * self.pixel_delta_v);
-                let ray_direction = pixel_center - self.center;
+                let mut pixel_color = Color::new(0 ,0, 0);
 
-                let r = Ray {orig: self.center, dir: ray_direction};
+                for _ in 0..self.samples_per_pixel {
+                    let r = self.get_ray(i, j);
+                    pixel_color += self.ray_color(&r, &world);
+                }
 
-                let pixel_color = Self::ray_color(&r, &world);
-                write_color(pixel_color);
+                write_color(pixel_color, self.samples_per_pixel);
             }
         }
         eprintln!("Done rendering");
     }
 
-    fn initialize() {
+    fn get_ray(&self, i: u32, j: u32) -> Ray {
+        let pixel_center = self.pixel00_loc + (i as f64 * self.pixel_delta_u) + (j as f64 * self.pixel_delta_v);
+        let pixel_sample = pixel_center + self.pixel_sample_square();
 
+        return Ray {orig: self.center, dir: pixel_sample - self.center}
     }
 
-    fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
+    fn pixel_sample_square(&self) -> Vec3 {
+        let px = -0.5 + random::<f64>();
+        let py = -0.5 + random::<f64>();
+
+        return (px * self.pixel_delta_u) + (py * self.pixel_delta_v);
+    }
+
+    fn ray_color(&self, r: &Ray, world: &impl Hittable) -> Color {
         let mut rec = HitRecord::default();
     
         if world.hit(r, Interval::new(0.0, f64::INFINITY), &mut rec) {

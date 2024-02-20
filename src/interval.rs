@@ -11,11 +11,17 @@ impl Interval {
         }
     }
 
-    pub fn contains(&self, item: &f64) -> bool {
-        self.min <= *item && *item <= self.max
+    pub fn contains(&self, item: f64) -> bool {
+        self.min <= item && item <= self.max
     }
     
-    pub fn surrounds(&self, item: &f64) -> bool {
-        self.min < *item && *item < self.max
+    pub fn surrounds(&self, item: f64) -> bool {
+        self.min < item && item < self.max
+    }
+
+    pub fn clamp(&self, item: f64) -> f64 {
+        if item < self.min {return self.min}
+        if item > self.max {return self.max}
+        return item
     }
 }
