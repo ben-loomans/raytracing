@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -10,11 +10,11 @@ pub struct Vec3 {
 pub type Point3 = Vec3;
 
 impl Vec3 {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
+    pub fn new<T: Into<f64>>(x: T, y: T, z: T) -> Self {
         Self {
-            x,
-            y,
-            z,
+            x: x.into(),
+            y: y.into(),
+            z: z.into(),
         }
     }
 
