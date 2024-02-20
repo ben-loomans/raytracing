@@ -4,11 +4,13 @@ mod ray;
 mod hittable;
 mod sphere;
 mod hittable_list;
+mod interval;
 
 use std::rc::Rc;
 
 use hittable::HitRecord;
 use hittable::Hittable;
+use interval::Interval;
 use ray::Ray;
 use crate::color::*;
 use crate::hittable_list::HittableList;
@@ -18,7 +20,7 @@ use crate::vec3::*;
 fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
     let mut rec = HitRecord::default();
 
-    if world.hit(r, 0.0, f64::INFINITY, &mut rec) {
+    if world.hit(r, Interval::new(0.0, f64::INFINITY), &mut rec) {
         return 0.5 * (rec.normal + Color::new(1,1,1));
     }
 
