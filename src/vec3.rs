@@ -1,5 +1,9 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
+use rand::random;
+
+use crate::{interval::Interval, util::random_f64};
+
 #[derive(Clone, Copy, Default)]
 pub struct Vec3 {
     pub x: f64,
@@ -15,6 +19,22 @@ impl Vec3 {
             x: x.into(),
             y: y.into(),
             z: z.into(),
+        }
+    }
+
+    pub fn random() -> Self {
+        Self {
+            x: random(),
+            y: random(),
+            z: random(),
+        }
+    }
+
+    pub fn random_bounded(interval: &Interval) -> Self {
+        Self {
+            x: random_f64(interval),
+            y: random_f64(interval),
+            z: random_f64(interval),
         }
     }
 
@@ -41,6 +61,29 @@ impl Vec3 {
     pub fn unit_vector(self) -> Self {
         let len = self.length();
         self / len
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        loop {
+            let p = Vec3::random_bounded(&Interval::new(-1.0, 1.0));
+            if p.length_squared() < 1.0 {
+                return p;
+            }
+        }
+    }
+
+    pub fn random_unit_vector() -> Self {
+        Self::random_in_unit_sphere().unit_vector()
+    }
+
+    pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+        let on_unit_sphere = Self::random_unit_vector();
+        
+        if on_unit_sphere.dot(normal) > 0.0 {
+            return on_unit_sphere
+        } else {
+            return -on_unit_sphere
+        }
     }
 }
 
