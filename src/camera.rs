@@ -92,7 +92,7 @@ impl Camera {
 
         if depth <= 0 {return Color::new(0,0,0)}
     
-        if world.hit(r, Interval::new(0.001, f64::INFINITY), &mut rec) {
+        if let Some(rec) = world.hit(r, Interval::new(0.001, f64::INFINITY)) {
             let direction = rec.normal + Vec3::random_on_hemisphere(&rec.normal);
             return 0.1 * self.ray_color(&Ray::new(rec.p, direction), depth - 1, world);
         }
