@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::hittable::*;
 use crate::interval::Interval;
@@ -9,11 +9,11 @@ use crate::ray::*;
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    mat: Rc<dyn Material>
+    mat: Arc<dyn Material>
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, mat: Rc<dyn Material>) -> Self {
+    pub fn new(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Self {
         Self {
             center,
             radius,
@@ -46,7 +46,7 @@ impl Hittable for Sphere {
         let mut rec = HitRecord {
             p: r.at(root),
             normal: outward_normal,
-            mat: Rc::clone(&self.mat),
+            mat: Arc::clone(&self.mat),
             t: root,
             front_face: false,
         };

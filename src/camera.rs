@@ -1,3 +1,8 @@
+use std::sync::Arc;
+
+use rayon;
+use rayon::prelude::*;
+
 use rand::random;
 
 use crate::{hittable::{HitRecord, Hittable}, interval::Interval, ray::{self, Ray}, util::random_f64, write_color, Color, Point3, Vec3};
@@ -105,18 +110,17 @@ impl Camera {
         }
     }
 
-    pub fn render(&self, world: impl Hittable) {
+    pub fn render(&self, world: Arc<dyn Hittable>) {
         print!("P3\n{} {}\n255\n", self.image_width, self.image_height);
 
         for j in 0..self.image_height {
             eprintln!("scanlines remaining: {}", self.image_height - j);
             for i in 0..self.image_width {
-                let mut pixel_color = Color::new(0 ,0, 0);
-
-                for _ in 0..self.samples_per_pixel {
+                let pixel_color = (0..self.samples_per_pixel).into_par_iter().map(|_| {
                     let r = self.get_ray(i, j);
-                    pixel_color += self.ray_color(&r, self.max_depth, &world);
-                }
+                    let new_world = world.clone();
+                    self.ray_color(&r, self.max_depth, new_world)
+                }).sum();
 
                 write_color(pixel_color, self.samples_per_pixel);
             }
@@ -150,7 +154,7 @@ impl Camera {
         self.center + (p.x * self.defocus_disk_u) + (p.y * self.defocus_disk_v)
     }
 
-    fn ray_color(&self, r: &Ray, depth: u32, world: &impl Hittable) -> Color {
+    fn ray_color(&self, r: &Ray, depth: u32, world: Arc<dyn Hittable>) -> Color {
         if depth <= 0 {return Color::new(0,0,0)}
     
         if let Some(rec) = world.hit(r, Interval::new(0.001, f64::INFINITY)) {

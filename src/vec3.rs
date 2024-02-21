@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
+use std::{iter::Sum, ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub}};
 
 use rand::random;
 
@@ -9,6 +9,16 @@ pub struct Vec3 {
     pub x: f64,
     pub y: f64,
     pub z: f64,
+}
+
+impl Sum for Vec3 {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        let mut sum = Vec3::new(0,0,0);
+        for vec in iter {
+            sum += vec;
+        }
+        return sum
+    }
 }
 
 pub type Point3 = Vec3;
