@@ -45,7 +45,7 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
-        let reflected = r_in.dir.unit_vector().reflect(&rec.normal);
+        let reflected = Vec3::reflect(&r_in.dir.unit_vector(), &rec.normal);
         
         let atten = self.albedo;
         let scatter = Ray::new(rec.p, reflected);

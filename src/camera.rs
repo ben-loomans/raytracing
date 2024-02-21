@@ -88,13 +88,14 @@ impl Camera {
     }
 
     fn ray_color(&self, r: &Ray, depth: u32, world: &impl Hittable) -> Color {
-        let mut rec = HitRecord::default();
-
         if depth <= 0 {return Color::new(0,0,0)}
     
         if let Some(rec) = world.hit(r, Interval::new(0.001, f64::INFINITY)) {
-            let direction = rec.normal + Vec3::random_on_hemisphere(&rec.normal);
-            return 0.1 * self.ray_color(&Ray::new(rec.p, direction), depth - 1, world);
+            if let Some((atten, scatter)) = rec.mat.scatter(r, &rec) {
+                return atten * self.ray_color(&scatter, depth - 1, world);
+            }
+            
+            return Color::new(0,0,0);
         }
     
         let unit_direction = r.dir.unit_vector();
