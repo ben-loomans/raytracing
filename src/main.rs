@@ -12,6 +12,7 @@ mod material;
 use std::sync::Arc;
 
 use camera::Camera;
+use camera::CameraBuilder;
 use interval::Interval;
 use material::Dielectric;
 use material::Lambertian;
@@ -67,7 +68,15 @@ fn main() {
     let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
     world.add(Arc::new(Sphere::new(Point3::new(4,1,0), 1.0, material3)));
 
-    let cam = Camera::new(
+    let mut builder = CameraBuilder::new();
+    builder.width(1200)
+        .field_of_view(20.0)
+        .focus(0.6, 10.0)
+        .set_view(Point3::new(13,2,3), Point3::new(0,0,0), Vec3::new(0,1,0));
+
+    let cam = builder.build();
+        
+    /*let cam = Camera::new(
         16.0 / 9.0,
         1200,
         500,
@@ -78,7 +87,7 @@ fn main() {
         Vec3::new(0,1,0),
         0.6,
         10.0,
-    );
+    );*/
 
     cam.render(Arc::new(world));
 
